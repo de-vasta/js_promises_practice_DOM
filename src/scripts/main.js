@@ -1,31 +1,32 @@
 'use strict';
 
 const firstPromise = new Promise((resolve, reject) => {
+  const timeOutId = setTimeout(
+    reject,
+    3e3,
+    new Error('First promise was rejected'),
+  );
+
   document.addEventListener(
     'click',
     () => {
       resolve('First promise was resolved');
+      clearTimeout(timeOutId);
     },
     { once: true },
   );
-
-  setTimeout(reject, 3e3, new Error('First promise was rejected'));
 });
 
 const secondPromise = new Promise((resolve, reject) => {
-  const clickHandler = () => resolve('Second promise was resolved');
+  const clickHandler = (eventType) => {
+    resolve('Second promise was resolved');
+    removeEventListener('click', clickHandler);
+    removeEventListener('contextmenu', clickHandler);
+  };
 
-  document.addEventListener('click', () => clickHandler(), { once: true });
+  document.addEventListener('click', clickHandler);
 
-  document.addEventListener(
-    'contextmenu',
-    () => {
-      clickHandler();
-    },
-    {
-      once: true,
-    },
-  );
+  document.addEventListener('contextmenu', clickHandler);
 });
 
 const thirdPromise = new Promise((resolve, reject) => {
